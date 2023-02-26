@@ -203,7 +203,3 @@ def run():
             continue
         print('\nВозвращайся еще! Отметки сами себя не исправят!')
         break
-
-
-if __name__ == '__main__':
-    run()
