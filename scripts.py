@@ -1,4 +1,3 @@
-import os
 import random
 
 from datacenter.models import Schoolkid
@@ -128,6 +127,10 @@ def ask_schoolkid():
 
     while True:
         schoolkid_name = input(msg).strip().title()
+        if not schoolkid_name:
+            msg = ('\nХорошо бы все-таки написать имя :) \n'
+                   'Попробуй еще раз:\n')
+            continue
         schoolkids = get_schoolkid(schoolkid_name)
         if not len(schoolkids):
             msg = ('\nК сожалению, я не нашел ученика с таким именем.\n'
