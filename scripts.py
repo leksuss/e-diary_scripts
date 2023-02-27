@@ -63,15 +63,12 @@ def actions():
 
 def fix_marks(schoolkid):
 
-    bad_points = Mark.objects.filter(
+    Mark.objects.filter(
         schoolkid=schoolkid,
         points__lt=4,
+    ).update(
+        points=5,
     )
-
-    for bad_point in bad_points:
-        bad_point.points = 5
-
-    Mark.objects.bulk_update(bad_points, ['points'])
 
 
 def remove_chastisements(schoolkid):
