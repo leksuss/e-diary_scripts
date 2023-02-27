@@ -56,15 +56,9 @@ def actions():
             'func': create_commendation,
             'extra_arg_funcs': {
                 'subject': ask_subject,
-                'commendation_text': get_rand_commendation_text,
             }
         },
     }
-
-
-def get_rand_commendation_text():
-
-    return random.choice(COMMENDATION_TEXTS)
 
 
 def fix_marks(schoolkid):
@@ -89,7 +83,7 @@ def remove_chastisements(schoolkid):
     chastisement.delete()
 
 
-def create_commendation(schoolkid, subject, commendation_text):
+def create_commendation(schoolkid, subject):
 
     schoolkid_lessons = Lesson.objects.filter(
         year_of_study=schoolkid.year_of_study,
@@ -99,6 +93,7 @@ def create_commendation(schoolkid, subject, commendation_text):
 
     # order_by('?') is too heavy
     random_lesson = random.choice(schoolkid_lessons)
+    commendation_text = random.choice(COMMENDATION_TEXTS)
 
     Commendation.objects.create(
         text=commendation_text,
