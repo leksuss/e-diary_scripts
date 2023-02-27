@@ -82,13 +82,12 @@ def remove_chastisements(schoolkid):
 
 def create_commendation(schoolkid, subject):
 
-    schoolkid_lessons = Lesson.objects.filter(
+    random_lesson = Lesson.objects.filter(
         year_of_study=schoolkid.year_of_study,
         group_letter=schoolkid.group_letter,
         subject__title=subject,
-    )
+    ).order_by('?')
 
-    random_lesson = random.choice(schoolkid_lessons)
     commendation_text = random.choice(COMMENDATION_TEXTS)
 
     Commendation.objects.create(
@@ -119,11 +118,11 @@ def ask_schoolkid():
                    'Попробуй еще раз:\n')
             continue
         schoolkids = get_schoolkid(schoolkid_name)
-        if not len(schoolkids):
+        if not schoolkids:
             msg = ('\nК сожалению, я не нашел ученика с таким именем.\n'
                    'Может, ты ошибся в написании? Попробуй еще раз:\n')
             continue
-        if len(schoolkids) > 1:
+        if schoolkids.count() > 1:
             msg = ('\nЯ нашел больше чем одного ученика с таким именем.\n'
                    'Попробуй уточнить, добавив фамилию и/или отчество:\n')
             continue
