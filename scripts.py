@@ -99,7 +99,7 @@ def create_commendation(schoolkid, subject):
     )
 
 
-def get_schoolkid(schoolkid_name):
+def get_schoolkids(schoolkid_name):
 
     schoolkids = Schoolkid.objects.filter(
         full_name__contains=schoolkid_name,
@@ -117,7 +117,7 @@ def ask_schoolkid():
             msg = ('\nХорошо бы все-таки написать имя :) \n'
                    'Попробуй еще раз:\n')
             continue
-        schoolkids = get_schoolkid(schoolkid_name)
+        schoolkids = get_schoolkids(schoolkid_name)
         if not schoolkids:
             msg = ('\nК сожалению, я не нашел ученика с таким именем.\n'
                    'Может, ты ошибся в написании? Попробуй еще раз:\n')
@@ -127,7 +127,7 @@ def ask_schoolkid():
                    'Попробуй уточнить, добавив фамилию и/или отчество:\n')
             continue
         break
-    return schoolkids[0]
+    return schoolkids.first()
 
 
 def ask_action():
