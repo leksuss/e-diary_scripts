@@ -73,11 +73,11 @@ def fix_marks(schoolkid):
 
 def remove_chastisements(schoolkid):
 
-    chastisement = Chastisement.objects.filter(
+    chastisements = Chastisement.objects.filter(
         schoolkid=schoolkid,
     )
 
-    chastisement.delete()
+    chastisements.delete()
 
 
 def create_commendation(schoolkid, subject):
