@@ -88,7 +88,6 @@ def create_commendation(schoolkid, subject):
         subject__title=subject,
     )
 
-    # order_by('?') is too heavy
     random_lesson = random.choice(schoolkid_lessons)
     commendation_text = random.choice(COMMENDATION_TEXTS)
 
