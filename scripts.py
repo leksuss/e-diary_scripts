@@ -85,8 +85,8 @@ def create_commendation(schoolkid, subject):
     random_lesson = Lesson.objects.filter(
         year_of_study=schoolkid.year_of_study,
         group_letter=schoolkid.group_letter,
-        subject__title=subject,
-    ).order_by('?')
+        subject__title=subject.title,
+    ).order_by('?').first()
 
     commendation_text = random.choice(COMMENDATION_TEXTS)
 
@@ -99,35 +99,23 @@ def create_commendation(schoolkid, subject):
     )
 
 
-def get_schoolkids(schoolkid_name):
-
-    schoolkids = Schoolkid.objects.filter(
-        full_name__contains=schoolkid_name,
-    )
-    return schoolkids
-
-
 def ask_schoolkid():
 
-    msg = ('\nНапиши имя ученика, данные которого мы будем улучшать:\n')
+    msg = ('Напиши имя ученика, данные которого мы будем улучшать:\n')
+    asked_schoolkid_name = input(msg).strip().title()
 
-    while True:
-        schoolkid_name = input(msg).strip().title()
-        if not schoolkid_name:
-            msg = ('\nХорошо бы все-таки написать имя :) \n'
-                   'Попробуй еще раз:\n')
-            continue
-        schoolkids = get_schoolkids(schoolkid_name)
-        if not schoolkids:
-            msg = ('\nК сожалению, я не нашел ученика с таким именем.\n'
-                   'Может, ты ошибся в написании? Попробуй еще раз:\n')
-            continue
-        if schoolkids.count() > 1:
-            msg = ('\nЯ нашел больше чем одного ученика с таким именем.\n'
-                   'Попробуй уточнить, добавив фамилию и/или отчество:\n')
-            continue
-        break
-    return schoolkids.first()
+    try:
+        schoolkid = Schoolkid.objects.get(
+            full_name__contains=asked_schoolkid_name,
+        )
+    except Schoolkid.MultipleObjectsReturned:
+        print('\nЯ нашел много учеников с таким именем.')
+        return None
+    except Schoolkid.DoesNotExist:
+        print('\nК сожалению, я не нашел ученика с таким именем.')
+        return None
+
+    return schoolkid
 
 
 def ask_action():
@@ -137,55 +125,51 @@ def ask_action():
         printed_actions.append(f'{num}. {variant["msg"]}\n')
 
     msg = '\nЧто мы сегодня будем улучшать? Напиши номер действия:\n'
-    while True:
-        action_number = input(f'{msg}{"".join(printed_actions)}')
-        if action_number not in actions():
-            msg = f'\nПожалуйста, введи верный номер:\n'
-            continue
-        break
+
+    action_number = input(f'{msg}{"".join(printed_actions)}')
+    if action_number not in actions():
+        print('\nК сожалению, ты ввел неверный номер.')
+        return None
     return action_number
 
 
-def get_subject(subject_name):
-
-    subject_obj = Subject.objects.filter(
-        title=subject_name,
-    ).first()
-    if subject_obj:
-        return subject_obj.title
-    return False
-
-
-def ask_subject():
+def ask_subject(schoolkid):
 
     msg = '\nУкажи предмет урока, для которого нужно написать похвалу:\n'
-    while True:
-        subject_name = input(msg).strip().title()
-        subject_obj = get_subject(subject_name)
-        if not subject_obj:
-            msg = ('\nК сожалению, я не нашел этот предмет.\n'
-                   'Пожалуйста, напиши правильный предмет:\n')
-            continue
-        break
+    subject_name = input(msg).strip().title()
+    try:
+        subject_obj = Subject.objects.get(
+            title=subject_name,
+            year_of_study=schoolkid.year_of_study,
+        )
+    except Subject.DoesNotExist:
+        print('\nК сожалению, я не нашел этот предмет.')
+        return None
     return subject_obj
 
 
 def run():
 
     print('Приветствую тебя, мой юный хакер!')
-    while True:
-        schoolkid_obj = ask_schoolkid()
-        action = ask_action()
-        args = {}
-        if actions()[action]['extra_arg_funcs']:
-            for arg_name, arg_func in actions()[action]['extra_arg_funcs'].items():
-                args[arg_name] = arg_func()
-        actions()[action]['func'](schoolkid_obj, **args)
-        msg = ('\nОтлично, мы это сделали!\n'
-               'Хочешь хакнуть записи другого ученика? Просто нажми "Enter"\n'
-               'Если на сегодня всё, то отправь букву "q"\n')
-        whats_next = input(msg).strip()
-        if not whats_next:
-            continue
-        print('\nВозвращайся еще! Отметки сами себя не исправят!')
-        break
+
+    schoolkid_obj = ask_schoolkid()
+    if schoolkid_obj is None:
+        print('Запусти скрипт еще раз.')
+        return None
+
+    action = ask_action()
+    if action is None:
+        print('Запусти скрипт еще раз.')
+        return None
+
+    args = {}
+    if actions()[action]['extra_arg_funcs']:
+        for arg_name, arg_func in actions()[action]['extra_arg_funcs'].items():
+            args[arg_name] = arg_func(schoolkid_obj)
+            if args[arg_name] is None:
+                print('Запусти скрипт еще раз.')
+                return None
+
+    actions()[action]['func'](schoolkid_obj, **args)
+    print('\nОтлично, мы это сделали! Если хочешь исправить записи'
+          'другого ученика, запусти скрипт снова.\n')
